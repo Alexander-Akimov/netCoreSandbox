@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using WeatherMicroservice.utils;
+using Newtonsoft.Json;
+using WeatherMicroservice.BusinessDomain;
 
 namespace WeatherMicroservice
 {
@@ -17,6 +18,7 @@ namespace WeatherMicroservice
         // Describes the services that are necessary for this application
         public void ConfigureServices(IServiceCollection services)
         {
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -32,12 +34,15 @@ namespace WeatherMicroservice
             {
                 var latString = context.Request.Query["lat"].FirstOrDefault();
                 var longString = context.Request.Query["long"].FirstOrDefault();
-
-                var latitude = latString.TryParse();
-                var longitude = longString.TryParse();
-
-
-                await context.Response.WriteAsync($@"Retrieving Wather for lat: {latitude}, long: {longitude}");
+                
+                var weatherService = new WeatherService();
+                var weatherForecast = weatherService.GetWeatherForecast(latString, longString);
+                
+                var json = JsonConvert.SerializeObject(weatherForecast, Formatting.Indented);
+                context.Response.ContentType = "application/json; charset=utf-8";
+                
+                await context.Response.WriteAsync(json);
+                //await context.Response.WriteAsync($@"Retrieving Wather for lat: {latitude}, long: {longitude}");
             });
         }
     }
